@@ -266,6 +266,64 @@ body {
 .col-toggle-btn.active-computer { background: #1a2e45; border-color: #4d9de0; color: #4d9de0; }
 .col-toggle-btn.active-audio    { background: #0d1f12; border-color: #3fb950; color: #3fb950; }
 
+/* ── Thicker phase separator ─────────────── */
+.phase-block { border-bottom: 3px solid var(--border2) !important; margin-bottom: 2px; }
+
+/* ── Two-column admin body ───────────────── */
+.phase-two-col { display: flex; border-top: 1px solid var(--border); }
+.phase-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.phase-col-computer { border-right: 1px solid var(--border); }
+
+.admin-col-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+}
+.admin-col-head.computer { color: #4d9de0; }
+.admin-col-head.audio    { color: #3fb950; }
+.admin-col-title { flex: 1; }
+.admin-col-count { color: var(--text-muted); font-weight: 400; font-size: 10px; }
+.btn-add-col-step {
+  background: var(--surface3); border: 1px solid var(--border2);
+  color: var(--text-muted); padding: 2px 8px; border-radius: 4px;
+  cursor: pointer; font-size: 10px; font-weight: 700;
+  transition: color .15s, background .15s;
+}
+.btn-add-col-step:hover { color: var(--text); background: #444c56; }
+
+/* ── Step row (2-col mode) ───────────────── */
+.step-row-2col {
+  border-bottom: 1px solid var(--border);
+  position: relative; draggable: true;
+}
+.step-row-2col:last-child { border-bottom: none; }
+.step-row-2col.dragging   { opacity: .35; }
+.step-row-2col.drag-over  { background: var(--blue-dim); border-top: 2px solid var(--blue); }
+
+.step-2col-top {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 8px 3px;
+}
+.drag-handle-sm {
+  color: var(--border2); cursor: grab; font-size: 13px;
+  user-select: none; flex-shrink: 0;
+}
+.drag-handle-sm:active { cursor: grabbing; }
+.step-2col-text { padding: 2px 8px 4px 28px; }
+.step-2col-actions {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 8px 7px 28px; flex-wrap: wrap;
+}
+.btn-move-col {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 4px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.btn-move-col:hover { border-color: var(--blue); color: #4d9de0; background: var(--blue-dim); }
+
 /* ── Add group button ────────────────────── */
 .btn-add-phase {
   display: flex; align-items: center; gap: 8px;
@@ -526,6 +584,16 @@ function setSaveStatus(state) {
                  : "";
 }
 
+// ─── Column detection (mirrors index.html logic) ─────────────────────────────
+function getStepCol(step) {
+  if (step.column) return step.column;
+  const lbl = (step.label || "").toUpperCase();
+  return (lbl.includes("COMPUTER") || lbl.includes("PRESENTER")) ? "computer" : "audio";
+}
+
+// ─── Shared drag source for step rows ────────────────────────────────────────
+let stepDragSrc = null;
+
 // ─── Render editor ────────────────────────────────────────────────────────────
 function renderEditor() {
   const editor = document.getElementById("editor");
@@ -537,17 +605,12 @@ function renderEditor() {
 document.getElementById("btn-add-phase").addEventListener("click", () => {
   const COLORS = ["#1a56a0","#2e7d32","#6a1b9a","#00838f","#c62828","#b45309","#00695c","#37474f"];
   const newPhase = {
-    id:    "phase-" + Date.now(),
-    title: "New Group",
-    icon:  "📋",
-    color: COLORS[phases.length % COLORS.length],
-    order: phases.length,
-    steps: []
+    id: "phase-" + Date.now(), title: "New Group", icon: "📋",
+    color: COLORS[phases.length % COLORS.length], order: phases.length, steps: []
   };
   phases.push(newPhase);
   scheduleSave();
   renderEditor();
-  // Focus the new phase title
   const inputs = document.querySelectorAll(".phase-title-edit");
   if (inputs.length) { inputs[inputs.length-1].focus(); inputs[inputs.length-1].select(); }
 });
@@ -559,9 +622,10 @@ function makePhaseBlock(phase, pi) {
   block.className = "phase-block";
   block.dataset.pi = pi;
 
-  // Phase-level drag and drop
+  // Phase-level drag and drop (reorder phases)
   block.draggable = true;
   block.addEventListener("dragstart", e => {
+    if (stepDragSrc) { e.preventDefault(); return; } // don't phase-drag when step-dragging
     phaseDragSrc = block;
     block.classList.add("phase-dragging");
     e.dataTransfer.effectAllowed = "move";
@@ -571,7 +635,7 @@ function makePhaseBlock(phase, pi) {
     document.querySelectorAll(".phase-block").forEach(b => b.classList.remove("phase-drag-over"));
   });
   block.addEventListener("dragover", e => {
-    // Only handle phase drags (not step drags)
+    if (stepDragSrc) return; // step drag in progress
     if (!phaseDragSrc || phaseDragSrc === block) return;
     if (phaseDragSrc.classList.contains("phase-block")) {
       e.preventDefault();
@@ -580,12 +644,10 @@ function makePhaseBlock(phase, pi) {
   });
   block.addEventListener("dragleave", () => block.classList.remove("phase-drag-over"));
   block.addEventListener("drop", e => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (stepDragSrc) return;
+    e.preventDefault(); e.stopPropagation();
     block.classList.remove("phase-drag-over");
     if (!phaseDragSrc || phaseDragSrc === block) return;
-    if (!phaseDragSrc.classList.contains("phase-block")) return;
-
     const fromPi = parseInt(phaseDragSrc.dataset.pi);
     const toPi   = parseInt(block.dataset.pi);
     const [moved] = phases.splice(fromPi, 1);
@@ -595,7 +657,7 @@ function makePhaseBlock(phase, pi) {
     renderEditor();
   });
 
-  // Header bar
+  // ── Phase header bar ───────────────────────────────────────────────────────
   const bar = document.createElement("div");
   bar.className = "phase-header-bar";
   bar.style.background      = phase.color + "18";
@@ -608,8 +670,8 @@ function makePhaseBlock(phase, pi) {
 
   const iconBtn = document.createElement("button");
   iconBtn.className   = "phase-icon-edit";
-  iconBtn.title       = "Click to change icon";
   iconBtn.textContent = phase.icon;
+  iconBtn.title       = "Click to change icon";
   iconBtn.addEventListener("click", () => {
     const val = prompt("Enter new emoji icon:", phase.icon);
     if (val) { phase.icon = val.trim(); iconBtn.textContent = phase.icon; scheduleSave(); }
@@ -624,37 +686,13 @@ function makePhaseBlock(phase, pi) {
   countEl.className   = "phase-step-count";
   countEl.textContent = phase.steps.length + " steps";
 
-  const addStepBtn = document.createElement("button");
-  addStepBtn.className = "btn-add-step";
-  addStepBtn.innerHTML  = "+ Add step";
-  addStepBtn.addEventListener("click", () => {
-    const newStep = {
-      id:     "step-" + Date.now(),
-      num:    "?",
-      label:  "📝 LABEL",
-      text:   "New step — click to edit",
-      order:  phase.steps.length,
-      friday: true,
-      sunday: true
-    };
-    phase.steps.push(newStep);
-    scheduleSave();
-    const newBlock = makePhaseBlock(phase, pi);
-    block.replaceWith(newBlock);
-    const rows = newBlock.querySelectorAll(".step-text-edit");
-    if (rows.length) { rows[rows.length-1].focus(); rows[rows.length-1].select(); }
-  });
-
   const delPhaseBtn = document.createElement("button");
   delPhaseBtn.className   = "btn-delete-phase";
   delPhaseBtn.textContent = "✕";
   delPhaseBtn.title       = "Delete this group";
   delPhaseBtn.addEventListener("click", () => {
-    const stepCount = phase.steps.length;
-    const msg = stepCount > 0
-      ? `Delete "${phase.title}" and its ${stepCount} step${stepCount > 1 ? "s" : ""}?`
-      : `Delete "${phase.title}"?`;
-    if (!confirm(msg)) return;
+    const n = phase.steps.length;
+    if (!confirm(n > 0 ? `Delete "${phase.title}" and its ${n} step${n>1?"s":""}?` : `Delete "${phase.title}"?`)) return;
     phases.splice(pi, 1);
     scheduleSave();
     renderEditor();
@@ -664,114 +702,159 @@ function makePhaseBlock(phase, pi) {
   bar.appendChild(iconBtn);
   bar.appendChild(titleInput);
   bar.appendChild(countEl);
-  bar.appendChild(addStepBtn);
   bar.appendChild(delPhaseBtn);
   block.appendChild(bar);
 
-  // Steps list
-  const list = document.createElement("div");
-  list.className = "steps-list";
-  phase.steps.forEach((step, si) => list.appendChild(makeStepRow(step, phase, pi, si, list, block)));
-  block.appendChild(list);
+  // ── Two-column body ────────────────────────────────────────────────────────
+  const twoCol = document.createElement("div");
+  twoCol.className = "phase-two-col";
 
+  ["computer", "audio"].forEach(col => {
+    const colSteps = phase.steps.filter(s => getStepCol(s) === col);
+
+    const colDiv = document.createElement("div");
+    colDiv.className = "phase-col phase-col-" + col;
+    colDiv.dataset.col = col;
+
+    // Column header
+    const colHead = document.createElement("div");
+    colHead.className = "admin-col-head " + col;
+
+    const colTitle = document.createElement("span");
+    colTitle.className   = "admin-col-title";
+    colTitle.textContent = col === "computer" ? "💻 Computer" : "🔊 Audio & Lights";
+
+    const colCount = document.createElement("span");
+    colCount.className   = "admin-col-count";
+    colCount.textContent = colSteps.length + " steps";
+
+    const addColBtn = document.createElement("button");
+    addColBtn.className   = "btn-add-col-step";
+    addColBtn.textContent = "+ Add";
+    addColBtn.addEventListener("click", () => {
+      // Ensure step.column is set so auto-detect doesn't override
+      const newStep = {
+        id:     "step-" + Date.now(),
+        num:    col === "computer" ? "?" : "?",
+        label:  col === "computer" ? "💻 COMPUTER" : "🔊 AUDIO & LIGHTS",
+        text:   "New step — click to edit",
+        order:  phase.steps.length,
+        column: col,
+        friday: true,
+        sunday: true
+      };
+      phase.steps.push(newStep);
+      scheduleSave();
+      const newBlock = makePhaseBlock(phase, pi);
+      block.replaceWith(newBlock);
+      // Focus new step's textarea in this column
+      const newColDiv = newBlock.querySelector(`.phase-col-${col}`);
+      const areas = newColDiv ? newColDiv.querySelectorAll(".step-text-edit") : [];
+      if (areas.length) { areas[areas.length-1].focus(); areas[areas.length-1].select(); }
+    });
+
+    colHead.appendChild(colTitle);
+    colHead.appendChild(colCount);
+    colHead.appendChild(addColBtn);
+    colDiv.appendChild(colHead);
+
+    // Steps in this column
+    const stepsList = document.createElement("div");
+    stepsList.className = "col-steps-list";
+    colSteps.forEach((step, csi) => {
+      stepsList.appendChild(makeStepRow2Col(step, phase, pi, csi, col, stepsList, block));
+    });
+    colDiv.appendChild(stepsList);
+
+    twoCol.appendChild(colDiv);
+  });
+
+  block.appendChild(twoCol);
   return block;
 }
 
-function makeStepRow(step, phase, pi, si, list, block) {
-  const row = document.createElement("div");
-  row.className     = "step-row";
-  row.draggable     = true;
-  row.dataset.si    = si;
-  row.dataset.stepId = step.id;
+function makeStepRow2Col(step, phase, pi, csi, col, list, block) {
+  // Ensure column is set explicitly
+  if (!step.column) step.column = col;
 
-  // Drag handle
+  const row = document.createElement("div");
+  row.className      = "step-row-2col";
+  row.draggable      = true;
+  row.dataset.csi    = csi;
+  row.dataset.stepId = step.id;
+  row.dataset.col    = col;
+
+  // ── Top row: drag handle + num + label ───────────────────────────────────
+  const topRow = document.createElement("div");
+  topRow.className = "step-2col-top";
+
   const handle = document.createElement("div");
-  handle.className   = "drag-handle";
+  handle.className   = "drag-handle-sm";
   handle.textContent = "⠿";
   handle.title       = "Drag to reorder";
-
-  // Fields
-  const fields = document.createElement("div");
-  fields.className = "step-fields";
-
-  const topRow = document.createElement("div");
-  topRow.className = "step-top-row";
 
   const numInput = document.createElement("input");
   numInput.className   = "step-num-edit";
   numInput.value        = step.num;
-  numInput.title        = "Step number/code";
+  numInput.title        = "Step ID";
   numInput.addEventListener("input", () => { step.num = numInput.value; scheduleSave(); });
 
   const labelInput = document.createElement("input");
   labelInput.className   = "step-label-edit";
   labelInput.value        = step.label;
-  labelInput.placeholder  = "Category label";
+  labelInput.placeholder  = "Label";
+  labelInput.style.flex   = "1";
   labelInput.addEventListener("input", () => { step.label = labelInput.value; scheduleSave(); });
 
+  topRow.appendChild(handle);
   topRow.appendChild(numInput);
   topRow.appendChild(labelInput);
 
+  // ── Textarea ─────────────────────────────────────────────────────────────
+  const textWrap = document.createElement("div");
+  textWrap.className = "step-2col-text";
+
   const textArea = document.createElement("textarea");
-  textArea.className    = "step-text-edit";
-  textArea.value         = step.text;
-  textArea.rows          = 1;
-  textArea.placeholder   = "Step instructions…";
+  textArea.className   = "step-text-edit";
+  textArea.value        = step.text;
+  textArea.rows         = 1;
+  textArea.placeholder  = "Step instructions…";
   autoResize(textArea);
   textArea.addEventListener("input", () => {
     step.text = textArea.value;
     autoResize(textArea);
     scheduleSave();
   });
+  textWrap.appendChild(textArea);
 
-  fields.appendChild(topRow);
-  fields.appendChild(textArea);
+  // ── Actions row ───────────────────────────────────────────────────────────
+  const actRow = document.createElement("div");
+  actRow.className = "step-2col-actions";
 
-  // Column toggle (💻 Computer / 🔊 Audio)
-  const currentCol = step.column || ((() => {
-    const lbl = (step.label || "").toUpperCase();
-    return (lbl.includes("COMPUTER") || lbl.includes("PRESENTER")) ? "computer" : "audio";
-  })());
-  if (!step.column) step.column = currentCol;
-
-  const colToggle = document.createElement("div");
-  colToggle.className = "col-toggle";
-
-  ["computer","audio"].forEach(col => {
-    const btn = document.createElement("button");
-    btn.className = "col-toggle-btn" + (step.column === col ? " active-" + col : "");
-    btn.textContent = col === "computer" ? "💻 PC" : "🔊 Audio";
-    btn.addEventListener("click", () => {
-      step.column = col;
-      scheduleSave();
-      // Update both buttons' active state
-      colToggle.querySelectorAll(".col-toggle-btn").forEach(b => {
-        b.className = "col-toggle-btn" + (b.textContent.includes("PC") && col === "computer" ? " active-computer"
-                    : b.textContent.includes("Audio") && col === "audio" ? " active-audio" : "");
-      });
-    });
-    colToggle.appendChild(btn);
-  });
-
-  // Day checkboxes (Fri / Sun)
-  const dayChecks = document.createElement("div");
-  dayChecks.className = "day-checks";
-
+  // Fri / Sun checkboxes
   ["friday","sunday"].forEach(day => {
-    const label = document.createElement("label");
-    label.className = "day-check-label " + (day === "friday" ? "fri" : "sun");
-
+    const lbl = document.createElement("label");
+    lbl.className = "day-check-label " + (day === "friday" ? "fri" : "sun");
     const cb = document.createElement("input");
     cb.type    = "checkbox";
-    cb.checked = step[day] !== false; // default true if missing
-    cb.addEventListener("change", () => {
-      step[day] = cb.checked;
-      scheduleSave();
-    });
+    cb.checked = step[day] !== false;
+    cb.addEventListener("change", () => { step[day] = cb.checked; scheduleSave(); });
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(day === "friday" ? "Fri" : "Sun"));
+    actRow.appendChild(lbl);
+  });
 
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(day === "friday" ? "Fri" : "Sun"));
-    dayChecks.appendChild(label);
+  // Move to other column
+  const otherCol = col === "computer" ? "audio" : "computer";
+  const moveBtn = document.createElement("button");
+  moveBtn.className   = "btn-move-col";
+  moveBtn.textContent = col === "computer" ? "→ 🔊 Audio" : "→ 💻 PC";
+  moveBtn.title       = "Move to " + (col === "computer" ? "Audio" : "Computer") + " column";
+  moveBtn.addEventListener("click", () => {
+    step.column = otherCol;
+    scheduleSave();
+    const newBlock = makePhaseBlock(phase, pi);
+    block.replaceWith(newBlock);
   });
 
   // Delete
@@ -781,56 +864,62 @@ function makeStepRow(step, phase, pi, si, list, block) {
   delBtn.title       = "Delete step";
   delBtn.addEventListener("click", () => {
     if (!confirm("Delete this step?")) return;
-    phase.steps.splice(si, 1);
+    const idx = phase.steps.findIndex(s => s.id === step.id);
+    if (idx > -1) phase.steps.splice(idx, 1);
     scheduleSave();
     const newBlock = makePhaseBlock(phase, pi);
     block.replaceWith(newBlock);
   });
 
-  row.appendChild(handle);
-  row.appendChild(fields);
-  row.appendChild(colToggle);
-  row.appendChild(dayChecks);
-  row.appendChild(delBtn);
+  actRow.appendChild(moveBtn);
+  actRow.appendChild(delBtn);
 
-  // ── Drag & drop ──
-  let dragSrc = null;
+  row.appendChild(topRow);
+  row.appendChild(textWrap);
+  row.appendChild(actRow);
 
+  // ── Drag & drop (within same column only) ────────────────────────────────
   row.addEventListener("dragstart", e => {
-    dragSrc = row;
+    stepDragSrc = row;
     row.classList.add("dragging");
     e.dataTransfer.effectAllowed = "move";
+    e.stopPropagation(); // prevent phase drag from triggering
   });
   row.addEventListener("dragend", () => {
+    stepDragSrc = null;
     row.classList.remove("dragging");
-    list.querySelectorAll(".step-row").forEach(r => r.classList.remove("drag-over"));
+    list.querySelectorAll(".step-row-2col").forEach(r => r.classList.remove("drag-over"));
   });
   row.addEventListener("dragover", e => {
+    if (!stepDragSrc || stepDragSrc === row) return;
+    if (stepDragSrc.dataset.col !== col) return; // same column only
     e.preventDefault();
-    if (row !== dragSrc) row.classList.add("drag-over");
+    e.stopPropagation();
+    row.classList.add("drag-over");
   });
   row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
   row.addEventListener("drop", e => {
     e.preventDefault();
+    e.stopPropagation();
     row.classList.remove("drag-over");
-    if (!dragSrc || dragSrc === row) return;
+    if (!stepDragSrc || stepDragSrc === row) return;
+    if (stepDragSrc.dataset.col !== col) return;
 
-    const fromSi = parseInt(dragSrc.dataset.si);
-    const toSi   = parseInt(row.dataset.si);
+    const fromId = stepDragSrc.dataset.stepId;
+    const toId   = row.dataset.stepId;
+    const fromIdx = phase.steps.findIndex(s => s.id === fromId);
+    const toIdx   = phase.steps.findIndex(s => s.id === toId);
 
-    // Reorder in data
-    const [moved] = phase.steps.splice(fromSi, 1);
-    phase.steps.splice(toSi, 0, moved);
+    const [moved] = phase.steps.splice(fromIdx, 1);
+    phase.steps.splice(toIdx, 0, moved);
+    stepDragSrc = null;
     scheduleSave();
-
-    // Re-render phase block
     const newBlock = makePhaseBlock(phase, pi);
     block.replaceWith(newBlock);
   });
 
   return row;
 }
-
 function autoResize(el) {
   el.style.height = "auto";
   el.style.height = el.scrollHeight + "px";
