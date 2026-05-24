@@ -150,6 +150,19 @@ body {
 .phase-title-edit:hover { border-bottom-color: var(--border2); }
 .phase-title-edit:focus { background: var(--surface2); border-bottom-color: var(--blue); }
 .phase-step-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.phase-drag-handle {
+  color: var(--border2); cursor: grab; font-size: 18px;
+  padding: 0 8px 0 0; user-select: none; flex-shrink: 0;
+}
+.phase-drag-handle:active { cursor: grabbing; }
+.btn-delete-phase {
+  background: none; border: none; color: var(--border2);
+  cursor: pointer; font-size: 15px; padding: 4px 8px; border-radius: 5px;
+  flex-shrink: 0; transition: color .15s, background .15s;
+}
+.btn-delete-phase:hover { color: var(--red); background: rgba(248,81,73,.08); }
+.phase-block.phase-dragging { opacity: .4; }
+.phase-block.phase-drag-over { border-top: 2px solid var(--blue); }
 .btn-add-step {
   background: var(--surface2); border: 1px solid var(--border2);
   color: var(--text-muted); padding: 5px 12px; border-radius: 5px;
@@ -238,7 +251,16 @@ body {
 .day-check-label.sun { color: #60a5fa; }
 .day-check-label input[type="checkbox"] { accent-color: var(--blue); cursor: pointer; width: 13px; height: 13px; }
 
-/* ── DROP ZONE (add step) ─────────────────── */
+/* ── Add group button ────────────────────── */
+.btn-add-phase {
+  display: flex; align-items: center; gap: 8px;
+  margin: 8px auto 0; padding: 12px 28px;
+  background: var(--surface); border: 1px dashed var(--border2);
+  color: var(--text-muted); border-radius: 8px; cursor: pointer;
+  font-size: 13px; transition: border-color .15s, color .15s, background .15s;
+  width: 100%;
+}
+.btn-add-phase:hover { border-color: var(--blue); color: var(--text); background: var(--surface2); }
 .add-step-row {
   padding: 10px 16px;
   border-top: 1px solid var(--border);
@@ -306,6 +328,9 @@ body {
   </div>
 
   <div id="editor"></div>
+  <div id="add-phase-wrap" style="max-width:860px;margin:0 auto;padding:0 16px 60px;display:none">
+    <button class="btn-add-phase" id="btn-add-phase">+ Add group</button>
+  </div>
 </div>
 
 <script type="module">
@@ -491,22 +516,84 @@ function renderEditor() {
   const editor = document.getElementById("editor");
   editor.innerHTML = "";
   phases.forEach((phase, pi) => editor.appendChild(makePhaseBlock(phase, pi)));
+  document.getElementById("add-phase-wrap").style.display = "block";
 }
+
+document.getElementById("btn-add-phase").addEventListener("click", () => {
+  const COLORS = ["#1a56a0","#2e7d32","#6a1b9a","#00838f","#c62828","#b45309","#00695c","#37474f"];
+  const newPhase = {
+    id:    "phase-" + Date.now(),
+    title: "New Group",
+    icon:  "📋",
+    color: COLORS[phases.length % COLORS.length],
+    order: phases.length,
+    steps: []
+  };
+  phases.push(newPhase);
+  scheduleSave();
+  renderEditor();
+  // Focus the new phase title
+  const inputs = document.querySelectorAll(".phase-title-edit");
+  if (inputs.length) { inputs[inputs.length-1].focus(); inputs[inputs.length-1].select(); }
+});
+
+let phaseDragSrc = null;
 
 function makePhaseBlock(phase, pi) {
   const block = document.createElement("div");
   block.className = "phase-block";
   block.dataset.pi = pi;
 
-  // Header
+  // Phase-level drag and drop
+  block.draggable = true;
+  block.addEventListener("dragstart", e => {
+    phaseDragSrc = block;
+    block.classList.add("phase-dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  block.addEventListener("dragend", () => {
+    block.classList.remove("phase-dragging");
+    document.querySelectorAll(".phase-block").forEach(b => b.classList.remove("phase-drag-over"));
+  });
+  block.addEventListener("dragover", e => {
+    // Only handle phase drags (not step drags)
+    if (!phaseDragSrc || phaseDragSrc === block) return;
+    if (phaseDragSrc.classList.contains("phase-block")) {
+      e.preventDefault();
+      block.classList.add("phase-drag-over");
+    }
+  });
+  block.addEventListener("dragleave", () => block.classList.remove("phase-drag-over"));
+  block.addEventListener("drop", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    block.classList.remove("phase-drag-over");
+    if (!phaseDragSrc || phaseDragSrc === block) return;
+    if (!phaseDragSrc.classList.contains("phase-block")) return;
+
+    const fromPi = parseInt(phaseDragSrc.dataset.pi);
+    const toPi   = parseInt(block.dataset.pi);
+    const [moved] = phases.splice(fromPi, 1);
+    phases.splice(toPi, 0, moved);
+    phaseDragSrc = null;
+    scheduleSave();
+    renderEditor();
+  });
+
+  // Header bar
   const bar = document.createElement("div");
   bar.className = "phase-header-bar";
-  bar.style.background     = phase.color + "18";
+  bar.style.background      = phase.color + "18";
   bar.style.borderLeftColor = phase.color;
 
+  const phaseDragHandle = document.createElement("div");
+  phaseDragHandle.className   = "phase-drag-handle";
+  phaseDragHandle.textContent = "⠿";
+  phaseDragHandle.title       = "Drag to reorder group";
+
   const iconBtn = document.createElement("button");
-  iconBtn.className = "phase-icon-edit";
-  iconBtn.title     = "Click to change icon";
+  iconBtn.className   = "phase-icon-edit";
+  iconBtn.title       = "Click to change icon";
   iconBtn.textContent = phase.icon;
   iconBtn.addEventListener("click", () => {
     const val = prompt("Enter new emoji icon:", phase.icon);
@@ -522,10 +609,10 @@ function makePhaseBlock(phase, pi) {
   countEl.className   = "phase-step-count";
   countEl.textContent = phase.steps.length + " steps";
 
-  const addBtn = document.createElement("button");
-  addBtn.className = "btn-add-step";
-  addBtn.innerHTML  = "+ Add step";
-  addBtn.addEventListener("click", () => {
+  const addStepBtn = document.createElement("button");
+  addStepBtn.className = "btn-add-step";
+  addStepBtn.innerHTML  = "+ Add step";
+  addStepBtn.addEventListener("click", () => {
     const newStep = {
       id:     "step-" + Date.now(),
       num:    "?",
@@ -537,18 +624,33 @@ function makePhaseBlock(phase, pi) {
     };
     phase.steps.push(newStep);
     scheduleSave();
-    // Re-render just this phase block
     const newBlock = makePhaseBlock(phase, pi);
     block.replaceWith(newBlock);
-    // Focus the new step's text field
     const rows = newBlock.querySelectorAll(".step-text-edit");
     if (rows.length) { rows[rows.length-1].focus(); rows[rows.length-1].select(); }
   });
 
+  const delPhaseBtn = document.createElement("button");
+  delPhaseBtn.className   = "btn-delete-phase";
+  delPhaseBtn.textContent = "✕";
+  delPhaseBtn.title       = "Delete this group";
+  delPhaseBtn.addEventListener("click", () => {
+    const stepCount = phase.steps.length;
+    const msg = stepCount > 0
+      ? `Delete "${phase.title}" and its ${stepCount} step${stepCount > 1 ? "s" : ""}?`
+      : `Delete "${phase.title}"?`;
+    if (!confirm(msg)) return;
+    phases.splice(pi, 1);
+    scheduleSave();
+    renderEditor();
+  });
+
+  bar.appendChild(phaseDragHandle);
   bar.appendChild(iconBtn);
   bar.appendChild(titleInput);
   bar.appendChild(countEl);
-  bar.appendChild(addBtn);
+  bar.appendChild(addStepBtn);
+  bar.appendChild(delPhaseBtn);
   block.appendChild(bar);
 
   // Steps list
