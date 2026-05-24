@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SER AV — Method of Procedure 2025</title>
+<title>SER AV — Method of Procedure</title>
 <style>
 :root {
   --bg: #0d1117;
@@ -17,6 +17,8 @@
   --next-bg: #1a2640;
   --next-border: #2563eb;
   --check-green: #3fb950;
+  --friday-color: #d97706;
+  --sunday-color: #2563eb;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -25,25 +27,93 @@ body {
   color: var(--text);
   min-height: 100vh;
 }
+
+/* ── SERVICE SELECTOR ──────────────────── */
+#service-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 32px;
+}
+.service-logo { height: 52px; width: auto; filter: brightness(0) invert(1); opacity: .9; }
+.service-heading {
+  text-align: center;
+}
+.service-heading h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.service-heading p  { font-size: 14px; color: var(--text-muted); }
+.service-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 560px;
+}
+.service-btn {
+  flex: 1; min-width: 200px;
+  border: none; border-radius: 14px;
+  padding: 36px 24px;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  transition: transform .15s, opacity .15s;
+}
+.service-btn:hover { transform: translateY(-3px); opacity: .92; }
+.service-btn:active { transform: translateY(0); }
+.service-btn-friday {
+  background: linear-gradient(135deg, #92400e 0%, #b45309 100%);
+  border: 1px solid #d97706;
+}
+.service-btn-sunday {
+  background: linear-gradient(135deg, #1e3a6e 0%, #1d4ed8 100%);
+  border: 1px solid #3b82f6;
+}
+.service-btn-icon { font-size: 36px; }
+.service-btn-day  { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: .5px; }
+.service-btn-desc { font-size: 12px; color: rgba(255,255,255,.7); text-align: center; line-height: 1.5; }
+
+/* ── APP ───────────────────────────────── */
+#app { display: none; }
+
 header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 16px 24px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
-.ser-logo img { height: 36px; width: auto; filter: brightness(0) invert(1); opacity: .92; }
-header h1 { font-size: 15px; font-weight: 500; color: var(--text-muted); flex: 1; }
+.ser-logo img { height: 32px; width: auto; filter: brightness(0) invert(1); opacity: .92; }
+header h1 { font-size: 14px; font-weight: 500; color: var(--text-muted); flex: 1; }
+
+/* Service badge in header */
+.service-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: .6px;
+  padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+}
+.service-badge.friday { background: #92400e22; border: 1px solid var(--friday-color); color: var(--friday-color); }
+.service-badge.sunday { background: #1e3a6e22; border: 1px solid #3b82f6;             color: #60a5fa; }
+
+.btn-change-service {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 5px;
+  transition: color .15s;
+}
+.btn-change-service:hover { color: var(--text); }
+
 #btn-reset-all {
   background: #21262d; border: 1px solid #444c56; color: #cdd9e5;
-  padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
   transition: background .15s;
 }
 #btn-reset-all:hover { background: #2d333b; }
+
 .global-progress {
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 8px 24px; display: flex; align-items: center; gap: 12px;
@@ -53,47 +123,39 @@ header h1 { font-size: 15px; font-weight: 500; color: var(--text-muted); flex: 1
 .progress-bar-fill { height: 100%; background: var(--check-green); border-radius: 4px; transition: width .3s ease; }
 main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
 
-/* Loading state */
+/* Loading */
 #loading-msg {
-  text-align: center;
-  padding: 80px 24px;
-  color: var(--text-muted);
-  font-size: 15px;
+  text-align: center; padding: 80px 24px;
+  color: var(--text-muted); font-size: 15px;
 }
 .spinner {
   width: 28px; height: 28px;
-  border: 2px solid var(--border);
-  border-top-color: #4d9de0;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
+  border: 2px solid var(--border); border-top-color: #4d9de0;
+  border-radius: 50%; animation: spin .7s linear infinite;
   margin: 0 auto 16px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Live update banner */
+/* Update banner */
 #update-banner {
-  display: none;
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
+  display: none; position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%);
-  background: #1a2640;
-  border: 1px solid #2563eb;
-  color: #93b4f0;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 13px;
-  z-index: 200;
+  background: #1a2640; border: 1px solid #2563eb; color: #93b4f0;
+  padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 200;
   animation: fadeIn .3s ease;
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
+/* Phases & steps */
 .phase { margin-bottom: 32px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .phase-header {
   padding: 14px 20px; display: flex; align-items: center; gap: 10px;
   cursor: pointer; user-select: none;
 }
-.phase-icon { font-size: 20px; }
+.phase-icon  { font-size: 20px; }
 .phase-title { flex: 1; font-size: 17px; font-weight: 700; letter-spacing: .3px; }
 .phase-progress { font-size: 12px; opacity: .75; margin-right: 8px; }
 .phase-bar-wrap { width: 80px; background: rgba(255,255,255,0.1); border-radius: 4px; height: 5px; overflow: hidden; margin-right: 10px; }
@@ -108,6 +170,7 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
 .phase.collapsed .phase-chevron { transform: rotate(-90deg); }
 .phase-body { border-top: 1px solid var(--border); }
 .phase.collapsed .phase-body { display: none; }
+
 .step {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 13px 20px; border-bottom: 1px solid var(--border);
@@ -115,17 +178,17 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
 }
 .step:last-child { border-bottom: none; }
 .step:hover:not(.done) { background: var(--surface2); }
-.step.done { background: var(--done-bg); opacity: .6; }
-.step.next-up { background: var(--next-bg); border-left: 3px solid var(--next-border); }
+.step.done     { background: var(--done-bg); opacity: .6; }
+.step.next-up  { background: var(--next-bg); border-left: 3px solid var(--next-border); }
 .step-checkbox {
   width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
   border: 2px solid #444c56; background: transparent;
   display: flex; align-items: center; justify-content: center;
   margin-top: 1px; transition: all .2s;
 }
-.step.done .step-checkbox { background: var(--check-green); border-color: var(--check-green); }
+.step.done .step-checkbox    { background: var(--check-green); border-color: var(--check-green); }
 .step-check-mark { display: none; color: #000; font-size: 11px; font-weight: 900; }
-.step.done .step-check-mark { display: block; }
+.step.done .step-check-mark  { display: block; }
 .step.next-up .step-checkbox { border-color: var(--next-border); }
 .step-content { flex: 1; min-width: 0; }
 .step-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -138,41 +201,66 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
   border-radius: 4px; padding: 2px 6px; min-width: 38px; text-align: center;
   letter-spacing: .5px; transition: color .2s; white-space: nowrap;
 }
-.step.done .step-num { color: #3a5a42; border-color: #2a3d30; }
+.step.done .step-num   { color: #3a5a42; border-color: #2a3d30; }
 .step.next-up .step-num { color: #5b8dee; border-color: #2a3f6e; background: #141e30; }
 .step-text { font-size: 14px; line-height: 1.55; color: var(--text); }
-.step.done .step-text { color: var(--done-text); text-decoration: line-through; }
+.step.done .step-text  { color: var(--done-text); text-decoration: line-through; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="ser-logo"><img src="SER_transparency-06.png" alt="S.E.R."></div>
-  <h1>Audiovisual — Method of Procedure</h1>
-  <button id="btn-reset-all">&#x21BA; Reset All</button>
-</header>
-
-<div class="global-progress">
-  <span id="global-label">Loading…</span>
-  <div class="progress-bar-wrap">
-    <div class="progress-bar-fill" id="global-bar" style="width:0%"></div>
+<!-- ── SERVICE SELECTOR ─────────────────────────────────── -->
+<div id="service-screen">
+  <img src="SER_transparency-06.png" alt="S.E.R." class="service-logo">
+  <div class="service-heading">
+    <h1>Audiovisual — Method of Procedure</h1>
+    <p>Select today's service to load the correct checklist</p>
+  </div>
+  <div class="service-buttons">
+    <button class="service-btn service-btn-friday" id="btn-friday">
+      <div class="service-btn-icon">🌙</div>
+      <div class="service-btn-day">Friday</div>
+      <div class="service-btn-desc">No streaming · shorter setup</div>
+    </button>
+    <button class="service-btn service-btn-sunday" id="btn-sunday">
+      <div class="service-btn-icon">☀️</div>
+      <div class="service-btn-day">Sunday</div>
+      <div class="service-btn-desc">Full service · includes streaming</div>
+    </button>
   </div>
 </div>
 
-<main id="main-content">
-  <div id="loading-msg">
-    <div class="spinner"></div>
-    Loading checklist…
+<!-- ── CHECKLIST APP ─────────────────────────────────────── -->
+<div id="app">
+  <header>
+    <div class="ser-logo"><img src="SER_transparency-06.png" alt="S.E.R."></div>
+    <h1>Audiovisual — Method of Procedure</h1>
+    <span class="service-badge" id="service-badge"></span>
+    <button class="btn-change-service" id="btn-change">↩ Change</button>
+    <button id="btn-reset-all">↺ Reset All</button>
+  </header>
+
+  <div class="global-progress">
+    <span id="global-label">Loading…</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="global-bar" style="width:0%"></div>
+    </div>
   </div>
-</main>
+
+  <main id="main-content">
+    <div id="loading-msg">
+      <div class="spinner"></div>
+      Loading checklist…
+    </div>
+  </main>
+</div>
 
 <div id="update-banner">⟳ Checklist updated by an editor</div>
 
 <script type="module">
-import { initializeApp }        from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { initializeApp }             from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-// ─── Firebase config ────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyA8aTRigumgLdbmTZoTAfVwFQKunE4kZc4",
   authDomain:        "ser-av-mop.firebaseapp.com",
@@ -186,23 +274,44 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ─── Session state (localStorage) ───────────────────────────────────────────
-// Keyed by step id so checked state survives a step reorder/edit
+// ── Session state ─────────────────────────────────────────
 function getChecked() {
   try { return JSON.parse(localStorage.getItem("ser-av-checked") || "{}"); }
   catch { return {}; }
 }
-function setChecked(obj) {
-  localStorage.setItem("ser-av-checked", JSON.stringify(obj));
-}
+function setChecked(obj) { localStorage.setItem("ser-av-checked", JSON.stringify(obj)); }
 
-let PHASES = [];   // current data from Firebase
-let checked = getChecked();
+let PHASES    = [];
+let checked   = getChecked();
+let service   = null;   // "friday" | "sunday"
 let firstLoad = true;
 
-// ─── Firebase listener ───────────────────────────────────────────────────────
+// ── Service selector ──────────────────────────────────────
+document.getElementById("btn-friday").addEventListener("click", () => startService("friday"));
+document.getElementById("btn-sunday").addEventListener("click", () => startService("sunday"));
+document.getElementById("btn-change").addEventListener("click", () => {
+  service = null;
+  document.getElementById("app").style.display = "none";
+  document.getElementById("service-screen").style.display = "flex";
+});
+
+function startService(svc) {
+  service = svc;
+  document.getElementById("service-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  // Update badge
+  const badge = document.getElementById("service-badge");
+  badge.textContent = svc === "friday" ? "Friday" : "Sunday";
+  badge.className   = "service-badge " + svc;
+
+  // Render if data already loaded
+  if (PHASES.length) renderAll();
+}
+
+// ── Firebase listener ─────────────────────────────────────
 const phasesRef = ref(db, "phases");
-onValue(phasesRef, (snapshot) => {
+onValue(phasesRef, snapshot => {
   const raw = snapshot.val();
   if (!raw) {
     document.getElementById("loading-msg").textContent =
@@ -210,41 +319,50 @@ onValue(phasesRef, (snapshot) => {
     return;
   }
 
-  // raw is an array or object — normalise to sorted array
   PHASES = (Array.isArray(raw) ? raw : Object.values(raw))
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .sort((a,b) => (a.order??0)-(b.order??0))
     .map(p => ({
       ...p,
-      steps: (Array.isArray(p.steps) ? p.steps : Object.values(p.steps || {}))
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      steps: (Array.isArray(p.steps) ? p.steps : Object.values(p.steps||{}))
+        .sort((a,b) => (a.order??0)-(b.order??0))
     }));
 
   if (!firstLoad) showUpdateBanner();
   firstLoad = false;
 
-  renderAll();
+  if (service) renderAll();
 });
 
-// ─── Render ──────────────────────────────────────────────────────────────────
+// ── Filter steps by service ───────────────────────────────
+// Missing friday/sunday field defaults to true (shows on both)
+function stepVisibleFor(step, svc) {
+  if (svc === "friday") return step.friday !== false;
+  if (svc === "sunday") return step.sunday !== false;
+  return true;
+}
+
+// ── Render ────────────────────────────────────────────────
 function renderAll() {
   const main = document.getElementById("main-content");
   main.innerHTML = "";
 
   PHASES.forEach((phase, pi) => {
-    main.appendChild(makePhaseEl(phase, pi));
+    const visibleSteps = phase.steps.filter(s => stepVisibleFor(s, service));
+    if (!visibleSteps.length) return;
+    main.appendChild(makePhaseEl(phase, visibleSteps, pi));
   });
 
   refreshAllStates();
 }
 
-function makePhaseEl(phase, pi) {
+function makePhaseEl(phase, visibleSteps, pi) {
   const phaseEl = document.createElement("div");
   phaseEl.className = "phase";
   phaseEl.dataset.pi = pi;
 
   const header = document.createElement("div");
   header.className = "phase-header";
-  header.style.background = phase.color + "22";
+  header.style.background  = phase.color + "22";
   header.style.borderLeft  = "4px solid " + phase.color;
   header.addEventListener("click", e => {
     if (!e.target.classList.contains("phase-reset-btn")) togglePhase(pi);
@@ -253,39 +371,35 @@ function makePhaseEl(phase, pi) {
   header.innerHTML = `
     <span class="phase-icon">${phase.icon}</span>
     <span class="phase-title">${phase.title}</span>
-    <span class="phase-progress" id="pp-${pi}">0/${phase.steps.length}</span>
+    <span class="phase-progress" id="pp-${pi}">0/${visibleSteps.length}</span>
     <div class="phase-bar-wrap">
       <div class="phase-bar-fill" id="pb-${pi}" style="background:${phase.color};width:0%"></div>
     </div>
     <button class="phase-reset-btn" data-pi="${pi}">↺ Reset</button>
     <span class="phase-chevron">▾</span>
   `;
-
   header.querySelector(".phase-reset-btn").addEventListener("click", e => {
-    e.stopPropagation();
-    resetPhase(pi);
+    e.stopPropagation(); resetPhase(visibleSteps);
   });
 
   const body = document.createElement("div");
   body.className = "phase-body";
-
-  phase.steps.forEach((step, si) => {
-    body.appendChild(makeStepEl(step, pi, si));
-  });
+  visibleSteps.forEach((step, si) => body.appendChild(makeStepEl(step, pi, si, visibleSteps)));
 
   phaseEl.appendChild(header);
   phaseEl.appendChild(body);
   return phaseEl;
 }
 
-function makeStepEl(step, pi, si) {
+function makeStepEl(step, pi, si, visibleSteps) {
   const el = document.createElement("div");
   el.className = "step";
   el.dataset.stepId = step.id;
-  el.dataset.pi = pi;
-  el.dataset.si = si;
-  el.addEventListener("click", () => toggleStep(step.id, pi, si));
-
+  el.addEventListener("click", () => {
+    checked[step.id] = !checked[step.id];
+    setChecked(checked);
+    refreshAllStates();
+  });
   el.innerHTML = `
     <div class="step-checkbox"><span class="step-check-mark">✓</span></div>
     <div class="step-content">
@@ -299,51 +413,44 @@ function makeStepEl(step, pi, si) {
   return el;
 }
 
-// ─── State helpers ────────────────────────────────────────────────────────────
-function isNextStep(targetPi, targetSi) {
-  for (let pi = 0; pi < PHASES.length; pi++) {
-    for (let si = 0; si < PHASES[pi].steps.length; si++) {
-      const id = PHASES[pi].steps[si].id;
-      if (!checked[id]) return pi === targetPi && si === targetSi;
-    }
-  }
-  return false;
-}
-
+// ── State helpers ─────────────────────────────────────────
 function refreshAllStates() {
-  let totalDone = 0;
-  let totalSteps = 0;
+  let totalDone = 0, totalSteps = 0;
 
   PHASES.forEach((phase, pi) => {
+    const visibleSteps = phase.steps.filter(s => stepVisibleFor(s, service));
+    if (!visibleSteps.length) return;
+
     let phaseDone = 0;
-    phase.steps.forEach((step, si) => {
+    visibleSteps.forEach((step, si) => {
       const el = document.querySelector(`.step[data-step-id="${step.id}"]`);
       if (!el) return;
       const done = !!checked[step.id];
-      const next = !done && isNextStep(pi, si);
+      const next = !done && isNextVisible(si, visibleSteps);
       el.className = "step" + (done ? " done" : "") + (next ? " next-up" : "");
       if (done) phaseDone++;
     });
 
     const pp = document.getElementById("pp-" + pi);
     const pb = document.getElementById("pb-" + pi);
-    if (pp) pp.textContent = phaseDone + "/" + phase.steps.length;
-    if (pb) pb.style.width = Math.round(phaseDone / phase.steps.length * 100) + "%";
+    if (pp) pp.textContent = phaseDone + "/" + visibleSteps.length;
+    if (pb) pb.style.width = Math.round(phaseDone / visibleSteps.length * 100) + "%";
 
     totalDone  += phaseDone;
-    totalSteps += phase.steps.length;
+    totalSteps += visibleSteps.length;
   });
 
   document.getElementById("global-bar").style.width =
-    Math.round(totalDone / totalSteps * 100) + "%";
+    totalSteps ? Math.round(totalDone / totalSteps * 100) + "%" : "0%";
   document.getElementById("global-label").textContent =
     totalDone + " / " + totalSteps + " steps complete";
 }
 
-function toggleStep(stepId, pi, si) {
-  checked[stepId] = !checked[stepId];
-  setChecked(checked);
-  refreshAllStates();
+function isNextVisible(targetSi, visibleSteps) {
+  for (let si = 0; si < visibleSteps.length; si++) {
+    if (!checked[visibleSteps[si].id]) return si === targetSi;
+  }
+  return false;
 }
 
 function togglePhase(pi) {
@@ -351,21 +458,19 @@ function togglePhase(pi) {
   if (el) el.classList.toggle("collapsed");
 }
 
-function resetPhase(pi) {
-  PHASES[pi].steps.forEach(s => { checked[s.id] = false; });
+function resetPhase(visibleSteps) {
+  visibleSteps.forEach(s => { checked[s.id] = false; });
   setChecked(checked);
   refreshAllStates();
 }
 
-function resetAll() {
+document.getElementById("btn-reset-all").addEventListener("click", () => {
   PHASES.forEach(p => p.steps.forEach(s => { checked[s.id] = false; }));
   setChecked(checked);
   refreshAllStates();
-}
+});
 
-document.getElementById("btn-reset-all").addEventListener("click", resetAll);
-
-// ─── Update banner ────────────────────────────────────────────────────────────
+// ── Update banner ─────────────────────────────────────────
 function showUpdateBanner() {
   const b = document.getElementById("update-banner");
   b.style.display = "block";

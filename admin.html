@@ -223,6 +223,21 @@ body {
 }
 .btn-delete-step:hover { color: var(--red); }
 
+/* ── Day checkboxes ──────────────────────── */
+.day-checks {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 8px; align-self: flex-start; flex-shrink: 0;
+  border-left: 1px solid var(--border);
+}
+.day-check-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+.day-check-label.fri { color: #d97706; }
+.day-check-label.sun { color: #60a5fa; }
+.day-check-label input[type="checkbox"] { accent-color: var(--blue); cursor: pointer; width: 13px; height: 13px; }
+
 /* ── DROP ZONE (add step) ─────────────────── */
 .add-step-row {
   padding: 10px 16px;
@@ -512,11 +527,13 @@ function makePhaseBlock(phase, pi) {
   addBtn.innerHTML  = "+ Add step";
   addBtn.addEventListener("click", () => {
     const newStep = {
-      id:    "step-" + Date.now(),
-      num:   "?",
-      label: "📝 LABEL",
-      text:  "New step — click to edit",
-      order: phase.steps.length
+      id:     "step-" + Date.now(),
+      num:    "?",
+      label:  "📝 LABEL",
+      text:   "New step — click to edit",
+      order:  phase.steps.length,
+      friday: true,
+      sunday: true
     };
     phase.steps.push(newStep);
     scheduleSave();
@@ -593,6 +610,27 @@ function makeStepRow(step, phase, pi, si, list, block) {
   fields.appendChild(topRow);
   fields.appendChild(textArea);
 
+  // Day checkboxes (Fri / Sun)
+  const dayChecks = document.createElement("div");
+  dayChecks.className = "day-checks";
+
+  ["friday","sunday"].forEach(day => {
+    const label = document.createElement("label");
+    label.className = "day-check-label " + (day === "friday" ? "fri" : "sun");
+
+    const cb = document.createElement("input");
+    cb.type    = "checkbox";
+    cb.checked = step[day] !== false; // default true if missing
+    cb.addEventListener("change", () => {
+      step[day] = cb.checked;
+      scheduleSave();
+    });
+
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(day === "friday" ? "Fri" : "Sun"));
+    dayChecks.appendChild(label);
+  });
+
   // Delete
   const delBtn = document.createElement("button");
   delBtn.className   = "btn-delete-step";
@@ -608,6 +646,7 @@ function makeStepRow(step, phase, pi, si, list, block) {
 
   row.appendChild(handle);
   row.appendChild(fields);
+  row.appendChild(dayChecks);
   row.appendChild(delBtn);
 
   // ── Drag & drop ──
