@@ -9,6 +9,7 @@
   --bg: #0d1117;
   --surface: #161b22;
   --surface2: #21262d;
+  --surface3: #2d333b;
   --border: #30363d;
   --text: #e6edf3;
   --text-muted: #8b949e;
@@ -19,6 +20,7 @@
   --check-green: #3fb950;
   --friday-color: #d97706;
   --sunday-color: #2563eb;
+  --header-h: 88px; /* app-header + progress bar combined */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -28,113 +30,179 @@ body {
   min-height: 100vh;
 }
 
-/* ── SERVICE SELECTOR ──────────────────── */
+/* ── SERVICE SELECTOR ───────────────────────── */
 #service-screen {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  gap: 32px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; gap: 32px;
 }
 .service-logo { height: 52px; width: auto; filter: brightness(0) invert(1); opacity: .9; }
-.service-heading {
-  text-align: center;
-}
+.service-heading { text-align: center; }
 .service-heading h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
 .service-heading p  { font-size: 14px; color: var(--text-muted); }
 .service-buttons {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-  max-width: 560px;
+  display: flex; gap: 20px; flex-wrap: wrap;
+  justify-content: center; width: 100%; max-width: 560px;
 }
 .service-btn {
-  flex: 1; min-width: 200px;
-  border: none; border-radius: 14px;
-  padding: 36px 24px;
-  cursor: pointer;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 14px;
+  flex: 1; min-width: 200px; border: none; border-radius: 14px;
+  padding: 36px 24px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
   transition: transform .15s, opacity .15s;
 }
 .service-btn:hover { transform: translateY(-3px); opacity: .92; }
 .service-btn:active { transform: translateY(0); }
-.service-btn-friday {
-  background: linear-gradient(135deg, #92400e 0%, #b45309 100%);
-  border: 1px solid #d97706;
-}
-.service-btn-sunday {
-  background: linear-gradient(135deg, #1e3a6e 0%, #1d4ed8 100%);
-  border: 1px solid #3b82f6;
-}
+.service-btn-friday { background: linear-gradient(135deg, #92400e 0%, #b45309 100%); border: 1px solid #d97706; }
+.service-btn-sunday { background: linear-gradient(135deg, #1e3a6e 0%, #1d4ed8 100%); border: 1px solid #3b82f6; }
 .service-btn-icon { font-size: 36px; }
 .service-btn-day  { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: .5px; }
 .service-btn-desc { font-size: 12px; color: rgba(255,255,255,.7); text-align: center; line-height: 1.5; }
 
-/* ── APP ───────────────────────────────── */
-#app { display: none; }
+/* ── APP SHELL ───────────────────────────────── */
+#app {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+}
 
-header {
+/* App header */
+.app-header {
+  flex-shrink: 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
 }
-.ser-logo img { height: 32px; width: auto; filter: brightness(0) invert(1); opacity: .92; }
-header h1 { font-size: 14px; font-weight: 500; color: var(--text-muted); flex: 1; }
-
-/* Service badge in header */
+.ser-logo img { height: 30px; width: auto; filter: brightness(0) invert(1); opacity: .92; }
+.app-header h1 { font-size: 13px; font-weight: 500; color: var(--text-muted); flex: 1; }
 .service-badge {
   font-size: 11px; font-weight: 700; letter-spacing: .6px;
   padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
 }
 .service-badge.friday { background: #92400e22; border: 1px solid var(--friday-color); color: var(--friday-color); }
-.service-badge.sunday { background: #1e3a6e22; border: 1px solid #3b82f6;             color: #60a5fa; }
-
+.service-badge.sunday { background: #1e3a6e22; border: 1px solid #3b82f6; color: #60a5fa; }
 .btn-change-service {
   background: none; border: none; color: var(--text-muted);
   font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 5px;
   transition: color .15s;
 }
 .btn-change-service:hover { color: var(--text); }
-
 #btn-reset-all {
-  background: #21262d; border: 1px solid #444c56; color: #cdd9e5;
-  padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  background: var(--surface2); border: 1px solid #444c56; color: #cdd9e5;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  transition: background .15s; white-space: nowrap;
+}
+#btn-reset-all:hover { background: var(--surface3); }
+
+/* Global progress */
+.global-progress {
+  flex-shrink: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 6px 20px; display: flex; align-items: center; gap: 10px;
+  font-size: 11px; color: var(--text-muted);
+}
+.progress-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 5px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--check-green); border-radius: 4px; transition: width .3s ease; }
+
+/* ── TABLE SCROLL AREA ──────────────────────── */
+.table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+/* ── MOP TABLE ──────────────────────────────── */
+.mop-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+/* Sticky column headers */
+.mop-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0;
+}
+.th-cat { width: 120px; }
+.th-computer, .th-audio { width: calc((100% - 120px) / 2); }
+
+.col-header {
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.col-header-title {
+  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.col-header-prog {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-muted);
+}
+.col-prog-bar { flex: 1; background: var(--surface2); border-radius: 3px; height: 3px; overflow: hidden; }
+.col-prog-fill { height: 100%; border-radius: 3px; transition: width .3s ease; }
+.col-prog-fill.computer { background: #4d9de0; }
+.col-prog-fill.audio    { background: #3fb950; }
+
+/* Phase rows */
+.phase-row td {
+  border: 1px solid var(--border);
+  vertical-align: top;
+  padding: 0;
+}
+.phase-name-cell {
+  padding: 12px 10px;
+  border-left: 3px solid;
+  background: var(--surface);
+  vertical-align: top;
+}
+.phase-cell-icon  { font-size: 16px; display: block; margin-bottom: 4px; }
+.phase-cell-title { font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--text); }
+
+.steps-cell { padding: 0; }
+.empty-cell { padding: 12px; color: var(--border); font-size: 12px; }
+
+/* Step items */
+.step-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
   transition: background .15s;
 }
-#btn-reset-all:hover { background: #2d333b; }
+.step-item:last-child { border-bottom: none; }
+.step-item:hover:not(.done) { background: var(--surface2); }
+.step-item.done    { background: var(--done-bg); opacity: .6; }
+.step-item.next-up { background: var(--next-bg); border-left: 2px solid var(--next-border); }
 
-.global-progress {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 8px 24px; display: flex; align-items: center; gap: 12px;
-  font-size: 12px; color: var(--text-muted);
+.step-cb {
+  width: 16px; height: 16px; min-width: 16px;
+  border-radius: 50%; border: 2px solid #444c56; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px; flex-shrink: 0; transition: all .2s;
 }
-.progress-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
-.progress-bar-fill { height: 100%; background: var(--check-green); border-radius: 4px; transition: width .3s ease; }
-main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
+.step-item.done    .step-cb { background: var(--check-green); border-color: var(--check-green); }
+.step-item.next-up .step-cb { border-color: var(--next-border); }
+.step-ck { display: none; color: #000; font-size: 9px; font-weight: 900; }
+.step-item.done .step-ck { display: block; }
 
-/* Loading */
-#loading-msg {
-  text-align: center; padding: 80px 24px;
-  color: var(--text-muted); font-size: 15px;
+.step-body { flex: 1; min-width: 0; }
+.step-num-badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  font-family: "SF Mono","Fira Code",monospace;
+  color: #555f6e; background: #1e242c; border: 1px solid #2d343d;
+  border-radius: 3px; padding: 1px 5px; margin-bottom: 3px;
+  letter-spacing: .5px;
 }
-.spinner {
-  width: 28px; height: 28px;
-  border: 2px solid var(--border); border-top-color: #4d9de0;
-  border-radius: 50%; animation: spin .7s linear infinite;
-  margin: 0 auto 16px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.step-item.done    .step-num-badge { color: #3a5a42; border-color: #2a3d30; }
+.step-item.next-up .step-num-badge { color: #5b8dee; border-color: #2a3f6e; background: #141e30; }
+.step-txt { font-size: 13px; line-height: 1.45; color: var(--text); }
+.step-item.done .step-txt { text-decoration: line-through; color: var(--done-text); }
 
 /* Update banner */
 #update-banner {
@@ -145,71 +213,43 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
   animation: fadeIn .3s ease;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from { opacity:0; transform:translateX(-50%) translateY(8px); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0); }
 }
 
-/* Phases & steps */
-.phase { margin-bottom: 32px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.phase-header {
-  padding: 14px 20px; display: flex; align-items: center; gap: 10px;
-  cursor: pointer; user-select: none;
+/* Loading */
+#loading-msg {
+  text-align: center; padding: 80px 24px;
+  color: var(--text-muted); font-size: 14px;
 }
-.phase-icon  { font-size: 20px; }
-.phase-title { flex: 1; font-size: 17px; font-weight: 700; letter-spacing: .3px; }
-.phase-progress { font-size: 12px; opacity: .75; margin-right: 8px; }
-.phase-bar-wrap { width: 80px; background: rgba(255,255,255,0.1); border-radius: 4px; height: 5px; overflow: hidden; margin-right: 10px; }
-.phase-bar-fill { height: 100%; border-radius: 4px; transition: width .3s ease; }
-.phase-reset-btn {
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); padding: 4px 10px; border-radius: 5px;
-  cursor: pointer; font-size: 11px; transition: background .15s;
+.spinner {
+  width: 28px; height: 28px; margin: 0 auto 16px;
+  border: 2px solid var(--border); border-top-color: #4d9de0;
+  border-radius: 50%; animation: spin .7s linear infinite;
 }
-.phase-reset-btn:hover { background: rgba(255,255,255,0.15); }
-.phase-chevron { font-size: 12px; opacity: .6; transition: transform .2s; }
-.phase.collapsed .phase-chevron { transform: rotate(-90deg); }
-.phase-body { border-top: 1px solid var(--border); }
-.phase.collapsed .phase-body { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.step {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 13px 20px; border-bottom: 1px solid var(--border);
-  transition: background .2s, opacity .2s; cursor: pointer;
+/* ── MOBILE ──────────────────────────────────── */
+@media (max-width: 700px) {
+  #app { height: auto; }
+  .table-wrap { overflow: visible; }
+  .mop-table { min-width: unset; display: block; }
+  .mop-table thead { display: none; }
+  .mop-table tbody { display: block; padding: 12px; }
+  .phase-row { display: block; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .phase-row td { display: block; border: none; border-bottom: 1px solid var(--border); }
+  .phase-row td:last-child { border-bottom: none; }
+  .phase-name-cell { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-left: 4px solid; }
+  .phase-cell-icon  { display: inline; font-size: 18px; margin: 0; }
+  .phase-cell-title { font-size: 14px; }
+  .step-item { padding: 10px 14px; }
+  .step-txt { font-size: 14px; }
 }
-.step:last-child { border-bottom: none; }
-.step:hover:not(.done) { background: var(--surface2); }
-.step.done     { background: var(--done-bg); opacity: .6; }
-.step.next-up  { background: var(--next-bg); border-left: 3px solid var(--next-border); }
-.step-checkbox {
-  width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
-  border: 2px solid #444c56; background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 1px; transition: all .2s;
-}
-.step.done .step-checkbox    { background: var(--check-green); border-color: var(--check-green); }
-.step-check-mark { display: none; color: #000; font-size: 11px; font-weight: 900; }
-.step.done .step-check-mark  { display: block; }
-.step.next-up .step-checkbox { border-color: var(--next-border); }
-.step-content { flex: 1; min-width: 0; }
-.step-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.step-label { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted); }
-.step.done .step-label { color: #4a5a4e; }
-.step-num {
-  font-size: 10px; font-weight: 700;
-  font-family: "SF Mono", "Fira Code", monospace;
-  color: #555f6e; background: #1e242c; border: 1px solid #2d343d;
-  border-radius: 4px; padding: 2px 6px; min-width: 38px; text-align: center;
-  letter-spacing: .5px; transition: color .2s; white-space: nowrap;
-}
-.step.done .step-num   { color: #3a5a42; border-color: #2a3d30; }
-.step.next-up .step-num { color: #5b8dee; border-color: #2a3f6e; background: #141e30; }
-.step-text { font-size: 14px; line-height: 1.55; color: var(--text); }
-.step.done .step-text  { color: var(--done-text); text-decoration: line-through; }
 </style>
 </head>
 <body>
 
-<!-- ── SERVICE SELECTOR ─────────────────────────────────── -->
+<!-- ── SERVICE SELECTOR ──────────────────────────── -->
 <div id="service-screen">
   <img src="SER_transparency-06.png" alt="S.E.R." class="service-logo">
   <div class="service-heading">
@@ -230,15 +270,15 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
   </div>
 </div>
 
-<!-- ── CHECKLIST APP ─────────────────────────────────────── -->
+<!-- ── CHECKLIST APP ──────────────────────────────── -->
 <div id="app">
-  <header>
+  <div class="app-header">
     <div class="ser-logo"><img src="SER_transparency-06.png" alt="S.E.R."></div>
     <h1>Audiovisual — Method of Procedure</h1>
     <span class="service-badge" id="service-badge"></span>
     <button class="btn-change-service" id="btn-change">↩ Change</button>
     <button id="btn-reset-all">↺ Reset All</button>
-  </header>
+  </div>
 
   <div class="global-progress">
     <span id="global-label">Loading…</span>
@@ -247,12 +287,36 @@ main { max-width: 820px; margin: 0 auto; padding: 24px 16px 80px; }
     </div>
   </div>
 
-  <main id="main-content">
-    <div id="loading-msg">
-      <div class="spinner"></div>
-      Loading checklist…
-    </div>
-  </main>
+  <div class="table-wrap">
+    <table class="mop-table">
+      <thead>
+        <tr>
+          <th class="th-cat"></th>
+          <th class="th-computer">
+            <div class="col-header">
+              <div class="col-header-title">💻 Computer</div>
+              <div class="col-header-prog">
+                <span id="prog-label-computer">–</span>
+                <div class="col-prog-bar"><div class="col-prog-fill computer" id="prog-bar-computer" style="width:0%"></div></div>
+              </div>
+            </div>
+          </th>
+          <th class="th-audio">
+            <div class="col-header">
+              <div class="col-header-title">🔊 Audio &amp; Lights &amp; Projector</div>
+              <div class="col-header-prog">
+                <span id="prog-label-audio">–</span>
+                <div class="col-prog-bar"><div class="col-prog-fill audio" id="prog-bar-audio" style="width:0%"></div></div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="3"><div id="loading-msg"><div class="spinner"></div>Loading checklist…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <div id="update-banner">⟳ Checklist updated by an editor</div>
@@ -274,48 +338,61 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ── Session state ─────────────────────────────────────────
+// ── Session state ────────────────────────────────
 function getChecked() {
   try { return JSON.parse(localStorage.getItem("ser-av-checked") || "{}"); }
   catch { return {}; }
 }
-function setChecked(obj) { localStorage.setItem("ser-av-checked", JSON.stringify(obj)); }
+function setChecked(o) { localStorage.setItem("ser-av-checked", JSON.stringify(o)); }
 
 let PHASES    = [];
 let checked   = getChecked();
-let service   = null;   // "friday" | "sunday"
+let service   = null;
 let firstLoad = true;
 
-// ── Service selector ──────────────────────────────────────
+// ── Column detection ─────────────────────────────
+// Uses explicit `column` field if set, otherwise infers from label
+function getStepColumn(step) {
+  if (step.column) return step.column;
+  const lbl = (step.label || "").toUpperCase();
+  if (lbl.includes("COMPUTER") || lbl.includes("PRESENTER")) return "computer";
+  return "audio";
+}
+
+function stepVisibleFor(step, svc) {
+  if (svc === "friday") return step.friday !== false;
+  if (svc === "sunday") return step.sunday !== false;
+  return true;
+}
+
+// ── Service selector ─────────────────────────────
 document.getElementById("btn-friday").addEventListener("click", () => startService("friday"));
 document.getElementById("btn-sunday").addEventListener("click", () => startService("sunday"));
 document.getElementById("btn-change").addEventListener("click", () => {
   service = null;
-  document.getElementById("app").style.display = "none";
+  document.getElementById("app").style.display  = "none";
   document.getElementById("service-screen").style.display = "flex";
 });
 
 function startService(svc) {
   service = svc;
   document.getElementById("service-screen").style.display = "none";
-  document.getElementById("app").style.display = "block";
+  const appEl = document.getElementById("app");
+  appEl.style.display = "flex";
 
-  // Update badge
   const badge = document.getElementById("service-badge");
   badge.textContent = svc === "friday" ? "Friday" : "Sunday";
   badge.className   = "service-badge " + svc;
 
-  // Render if data already loaded
   if (PHASES.length) renderAll();
 }
 
-// ── Firebase listener ─────────────────────────────────────
-const phasesRef = ref(db, "phases");
-onValue(phasesRef, snapshot => {
+// ── Firebase ─────────────────────────────────────
+onValue(ref(db, "phases"), snapshot => {
   const raw = snapshot.val();
   if (!raw) {
-    document.getElementById("loading-msg").textContent =
-      "No checklist data found. Ask an admin to publish the steps.";
+    document.getElementById("table-body").innerHTML =
+      `<tr><td colspan="3" style="padding:60px;text-align:center;color:var(--text-muted)">No checklist data. Ask an admin to publish steps.</td></tr>`;
     return;
   }
 
@@ -329,139 +406,122 @@ onValue(phasesRef, snapshot => {
 
   if (!firstLoad) showUpdateBanner();
   firstLoad = false;
-
   if (service) renderAll();
 });
 
-// ── Filter steps by service ───────────────────────────────
-// Missing friday/sunday field defaults to true (shows on both)
-function stepVisibleFor(step, svc) {
-  if (svc === "friday") return step.friday !== false;
-  if (svc === "sunday") return step.sunday !== false;
-  return true;
-}
-
-// ── Render ────────────────────────────────────────────────
+// ── Render ───────────────────────────────────────
 function renderAll() {
-  const main = document.getElementById("main-content");
-  main.innerHTML = "";
+  const tbody = document.getElementById("table-body");
+  tbody.innerHTML = "";
 
-  PHASES.forEach((phase, pi) => {
-    const visibleSteps = phase.steps.filter(s => stepVisibleFor(s, service));
-    if (!visibleSteps.length) return;
-    main.appendChild(makePhaseEl(phase, visibleSteps, pi));
+  PHASES.forEach(phase => {
+    const compSteps  = phase.steps.filter(s => stepVisibleFor(s, service) && getStepColumn(s) === "computer");
+    const audioSteps = phase.steps.filter(s => stepVisibleFor(s, service) && getStepColumn(s) === "audio");
+    if (!compSteps.length && !audioSteps.length) return;
+
+    const tr = document.createElement("tr");
+    tr.className = "phase-row";
+
+    // Category cell
+    const catTd = document.createElement("td");
+    catTd.className = "phase-name-cell";
+    catTd.style.borderLeftColor = phase.color;
+    catTd.innerHTML = `<span class="phase-cell-icon">${phase.icon}</span><span class="phase-cell-title">${phase.title}</span>`;
+
+    // Computer cell
+    const compTd = document.createElement("td");
+    compTd.className = "steps-cell";
+    if (compSteps.length) {
+      compSteps.forEach(s => compTd.appendChild(makeStepItem(s)));
+    } else {
+      compTd.innerHTML = `<div class="empty-cell">—</div>`;
+    }
+
+    // Audio cell
+    const audioTd = document.createElement("td");
+    audioTd.className = "steps-cell";
+    if (audioSteps.length) {
+      audioSteps.forEach(s => audioTd.appendChild(makeStepItem(s)));
+    } else {
+      audioTd.innerHTML = `<div class="empty-cell">—</div>`;
+    }
+
+    tr.appendChild(catTd);
+    tr.appendChild(compTd);
+    tr.appendChild(audioTd);
+    tbody.appendChild(tr);
   });
 
   refreshAllStates();
 }
 
-function makePhaseEl(phase, visibleSteps, pi) {
-  const phaseEl = document.createElement("div");
-  phaseEl.className = "phase";
-  phaseEl.dataset.pi = pi;
-
-  const header = document.createElement("div");
-  header.className = "phase-header";
-  header.style.background  = phase.color + "22";
-  header.style.borderLeft  = "4px solid " + phase.color;
-  header.addEventListener("click", e => {
-    if (!e.target.classList.contains("phase-reset-btn")) togglePhase(pi);
-  });
-
-  header.innerHTML = `
-    <span class="phase-icon">${phase.icon}</span>
-    <span class="phase-title">${phase.title}</span>
-    <span class="phase-progress" id="pp-${pi}">0/${visibleSteps.length}</span>
-    <div class="phase-bar-wrap">
-      <div class="phase-bar-fill" id="pb-${pi}" style="background:${phase.color};width:0%"></div>
-    </div>
-    <button class="phase-reset-btn" data-pi="${pi}">↺ Reset</button>
-    <span class="phase-chevron">▾</span>
-  `;
-  header.querySelector(".phase-reset-btn").addEventListener("click", e => {
-    e.stopPropagation(); resetPhase(visibleSteps);
-  });
-
-  const body = document.createElement("div");
-  body.className = "phase-body";
-  visibleSteps.forEach((step, si) => body.appendChild(makeStepEl(step, pi, si, visibleSteps)));
-
-  phaseEl.appendChild(header);
-  phaseEl.appendChild(body);
-  return phaseEl;
-}
-
-function makeStepEl(step, pi, si, visibleSteps) {
+function makeStepItem(step) {
   const el = document.createElement("div");
-  el.className = "step";
+  el.className = "step-item";
   el.dataset.stepId = step.id;
+  el.innerHTML = `
+    <div class="step-cb"><span class="step-ck">✓</span></div>
+    <div class="step-body">
+      <div class="step-num-badge">${step.num}</div>
+      <div class="step-txt">${step.text}</div>
+    </div>`;
   el.addEventListener("click", () => {
     checked[step.id] = !checked[step.id];
     setChecked(checked);
     refreshAllStates();
   });
-  el.innerHTML = `
-    <div class="step-checkbox"><span class="step-check-mark">✓</span></div>
-    <div class="step-content">
-      <div class="step-label-row">
-        <div class="step-label">${step.label}</div>
-        <div class="step-num">${step.num}</div>
-      </div>
-      <div class="step-text">${step.text}</div>
-    </div>
-  `;
   return el;
 }
 
-// ── State helpers ─────────────────────────────────────────
+// ── State & progress ─────────────────────────────
+function findNextInColumn(col) {
+  for (const phase of PHASES) {
+    for (const step of phase.steps) {
+      if (stepVisibleFor(step, service) && getStepColumn(step) === col && !checked[step.id])
+        return step.id;
+    }
+  }
+  return null;
+}
+
 function refreshAllStates() {
-  let totalDone = 0, totalSteps = 0;
+  const nextComp  = findNextInColumn("computer");
+  const nextAudio = findNextInColumn("audio");
 
-  PHASES.forEach((phase, pi) => {
-    const visibleSteps = phase.steps.filter(s => stepVisibleFor(s, service));
-    if (!visibleSteps.length) return;
+  let totalDone=0, totalSteps=0, compDone=0, compTotal=0, audioDone=0, audioTotal=0;
 
-    let phaseDone = 0;
-    visibleSteps.forEach((step, si) => {
-      const el = document.querySelector(`.step[data-step-id="${step.id}"]`);
-      if (!el) return;
+  PHASES.forEach(phase => {
+    phase.steps.forEach(step => {
+      if (!stepVisibleFor(step, service)) return;
+      const el  = document.querySelector(`.step-item[data-step-id="${step.id}"]`);
+      const col = getStepColumn(step);
       const done = !!checked[step.id];
-      const next = !done && isNextVisible(si, visibleSteps);
-      el.className = "step" + (done ? " done" : "") + (next ? " next-up" : "");
-      if (done) phaseDone++;
+      const next = !done && step.id === (col === "computer" ? nextComp : nextAudio);
+
+      if (el) el.className = "step-item" + (done ? " done" : "") + (next ? " next-up" : "");
+
+      totalSteps++; if (done) totalDone++;
+      if (col === "computer") { compTotal++;  if (done) compDone++;  }
+      else                    { audioTotal++; if (done) audioDone++; }
     });
-
-    const pp = document.getElementById("pp-" + pi);
-    const pb = document.getElementById("pb-" + pi);
-    if (pp) pp.textContent = phaseDone + "/" + visibleSteps.length;
-    if (pb) pb.style.width = Math.round(phaseDone / visibleSteps.length * 100) + "%";
-
-    totalDone  += phaseDone;
-    totalSteps += visibleSteps.length;
   });
 
+  // Global bar
   document.getElementById("global-bar").style.width =
-    totalSteps ? Math.round(totalDone / totalSteps * 100) + "%" : "0%";
+    totalSteps ? Math.round(totalDone/totalSteps*100)+"%" : "0%";
   document.getElementById("global-label").textContent =
     totalDone + " / " + totalSteps + " steps complete";
-}
 
-function isNextVisible(targetSi, visibleSteps) {
-  for (let si = 0; si < visibleSteps.length; si++) {
-    if (!checked[visibleSteps[si].id]) return si === targetSi;
-  }
-  return false;
-}
+  // Column bars
+  document.getElementById("prog-bar-computer").style.width =
+    compTotal ? Math.round(compDone/compTotal*100)+"%" : "0%";
+  document.getElementById("prog-label-computer").textContent =
+    compDone + "/" + compTotal;
 
-function togglePhase(pi) {
-  const el = document.querySelector(`.phase[data-pi="${pi}"]`);
-  if (el) el.classList.toggle("collapsed");
-}
-
-function resetPhase(visibleSteps) {
-  visibleSteps.forEach(s => { checked[s.id] = false; });
-  setChecked(checked);
-  refreshAllStates();
+  document.getElementById("prog-bar-audio").style.width =
+    audioTotal ? Math.round(audioDone/audioTotal*100)+"%" : "0%";
+  document.getElementById("prog-label-audio").textContent =
+    audioDone + "/" + audioTotal;
 }
 
 document.getElementById("btn-reset-all").addEventListener("click", () => {
@@ -470,7 +530,7 @@ document.getElementById("btn-reset-all").addEventListener("click", () => {
   refreshAllStates();
 });
 
-// ── Update banner ─────────────────────────────────────────
+// ── Update banner ─────────────────────────────────
 function showUpdateBanner() {
   const b = document.getElementById("update-banner");
   b.style.display = "block";

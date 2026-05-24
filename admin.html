@@ -251,6 +251,21 @@ body {
 .day-check-label.sun { color: #60a5fa; }
 .day-check-label input[type="checkbox"] { accent-color: var(--blue); cursor: pointer; width: 13px; height: 13px; }
 
+/* ── Column toggle ───────────────────────────── */
+.col-toggle {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 8px; align-self: flex-start; flex-shrink: 0;
+  border-left: 1px solid var(--border);
+}
+.col-toggle-btn {
+  font-size: 10px; font-weight: 700; padding: 3px 7px;
+  border-radius: 4px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.col-toggle-btn.active-computer { background: #1a2e45; border-color: #4d9de0; color: #4d9de0; }
+.col-toggle-btn.active-audio    { background: #0d1f12; border-color: #3fb950; color: #3fb950; }
+
 /* ── Add group button ────────────────────── */
 .btn-add-phase {
   display: flex; align-items: center; gap: 8px;
@@ -712,6 +727,32 @@ function makeStepRow(step, phase, pi, si, list, block) {
   fields.appendChild(topRow);
   fields.appendChild(textArea);
 
+  // Column toggle (💻 Computer / 🔊 Audio)
+  const currentCol = step.column || ((() => {
+    const lbl = (step.label || "").toUpperCase();
+    return (lbl.includes("COMPUTER") || lbl.includes("PRESENTER")) ? "computer" : "audio";
+  })());
+  if (!step.column) step.column = currentCol;
+
+  const colToggle = document.createElement("div");
+  colToggle.className = "col-toggle";
+
+  ["computer","audio"].forEach(col => {
+    const btn = document.createElement("button");
+    btn.className = "col-toggle-btn" + (step.column === col ? " active-" + col : "");
+    btn.textContent = col === "computer" ? "💻 PC" : "🔊 Audio";
+    btn.addEventListener("click", () => {
+      step.column = col;
+      scheduleSave();
+      // Update both buttons' active state
+      colToggle.querySelectorAll(".col-toggle-btn").forEach(b => {
+        b.className = "col-toggle-btn" + (b.textContent.includes("PC") && col === "computer" ? " active-computer"
+                    : b.textContent.includes("Audio") && col === "audio" ? " active-audio" : "");
+      });
+    });
+    colToggle.appendChild(btn);
+  });
+
   // Day checkboxes (Fri / Sun)
   const dayChecks = document.createElement("div");
   dayChecks.className = "day-checks";
@@ -748,6 +789,7 @@ function makeStepRow(step, phase, pi, si, list, block) {
 
   row.appendChild(handle);
   row.appendChild(fields);
+  row.appendChild(colToggle);
   row.appendChild(dayChecks);
   row.appendChild(delBtn);
 
