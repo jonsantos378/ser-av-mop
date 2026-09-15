@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SER AV Setup — Sunday v5</title>
+<style>
+  body {
+    background: #0b0f19;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #e8eaf0;
+    margin: 0;
+    padding: 30px;
+  }
+  h1 { text-align:center; font-size:22px; margin-bottom:4px; color:#fff; }
+  h2 { text-align:center; font-size:13px; font-weight:400; color:#8b93a7; margin-top:0; margin-bottom:30px; }
+  .canvas { position:relative; width:1200px; height:920px; margin:0 auto; }
+  .box {
+    position:absolute; border-radius:12px; padding:12px 16px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);
+  }
+  .box-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .box-sub { font-size:11px; color:rgba(255,255,255,0.72); line-height:1.45; }
+  .pc     { background:#1c2440; border:2px solid #4b6bff; }
+  .device { background:#1c3327; border:2px solid #3fae6a; }
+  .cloud  { background:#3a1f3d; border:2px solid #b256c4; }
+  .output { background:#3d2a15; border:2px solid #d68a2d; }
+  svg { position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+  .lbl {
+    position:absolute; background:#0b0f19; padding:2px 7px;
+    font-size:11px; border-radius:5px; color:#cfd4e0;
+    border:1px solid #2a3350; white-space:nowrap;
+  }
+  .lbl.audio  { color:#3fae6a; border-color:#1a5c35; }
+  .lbl.video  { color:#6fd0ff; border-color:#234a5c; }
+  .lbl.stream { color:#e389f0; border-color:#5c2463; }
+  .lbl.remote { color:#ffb454; border-color:#7a5324; }
+  .lbl.switch { color:#ff8f6b; border-color:#6b3320; }
+  .legend {
+    width:1200px; margin:24px auto 0; display:flex; flex-wrap:wrap;
+    justify-content:center; gap:22px; font-size:12px; color:#aab1c4;
+  }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .swatch { width:22px; height:3px; display:inline-block; border-radius:2px; }
+</style>
+</head>
+<body>
+<h1>S.E.R. AV Signal Flow — Sunday Service</h1>
+<h2>PC-Podium (left) · Projector &amp; Webcam (top) · PC-AV + audio chain (right) · StreamYard (center)</h2>
+
+<div class="canvas">
+<svg>
+<defs>
+  <marker id="aBlue"   markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#6fd0ff"/></marker>
+  <marker id="aOrange" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3fae6a"/></marker>
+  <marker id="aPurple" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#e389f0"/></marker>
+  <marker id="aRed"    markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#ff8f6b"/></marker>
+  <marker id="aGreen"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#ffb454"/></marker>
+</defs>
+
+<!-- 1. Webcam → PC-AV (straight down, far right) -->
+<path d="M 1092 110 L 1092 230" stroke="#6fd0ff" stroke-width="2.5" fill="none" marker-end="url(#aBlue)"/>
+
+<!-- 2. PC-AV → Projector (diagonal up-left) -->
+<path d="M 1010 250 C 900 160, 760 100, 660 80" stroke="#6fd0ff" stroke-width="2.5" fill="none" marker-end="url(#aBlue)"/>
+
+<!-- 3. PC-Podium → Projector (diagonal up-right) -->
+<path d="M 230 250 C 340 160, 460 100, 530 80" stroke="#6fd0ff" stroke-width="2.5" fill="none" marker-end="url(#aBlue)"/>
+
+<!-- 4. Chrome Remote Desktop arc above PC boxes -->
+<path d="M 240 275 C 450 180, 750 180, 1000 275" stroke="#ffb454" stroke-width="2.5" fill="none" marker-end="url(#aGreen)" stroke-dasharray="5,4"/>
+
+<!-- 5. PC-Podium → StreamYard (slide feed, dashed purple) -->
+<path d="M 240 330 C 380 330, 480 410, 540 430" stroke="#e389f0" stroke-width="2.5" fill="none" marker-end="url(#aPurple)" stroke-dasharray="6,4"/>
+
+<!-- 6. PC-AV → StreamYard (audio+video, solid purple) -->
+<path d="M 1000 330 C 860 330, 730 410, 690 430" stroke="#e389f0" stroke-width="2.5" fill="none" marker-end="url(#aPurple)"/>
+
+<!-- 7. Mic → Mixer: bottom of Mic → down → right → up into Mixer bottom center -->
+<path d="M 105 540 L 105 850 L 1092 850 L 1092 755" stroke="#3fae6a" stroke-width="2.5" fill="none" marker-end="url(#aOrange)"/>
+
+<!-- 8. Mixer → Focusrite — Mixer top center (1092,680) → Focusrite bottom center (1092,580) -->
+<path d="M 1092 680 L 1092 580" stroke="#3fae6a" stroke-width="2.5" fill="none" marker-end="url(#aOrange)"/>
+
+<!-- 9. Focusrite → PC-AV — Focusrite top center (1092,510) → PC-AV bottom center (1092,340) -->
+<path d="M 1092 510 L 1092 340" stroke="#3fae6a" stroke-width="2.5" fill="none" marker-end="url(#aOrange)"/>
+
+<!-- 10. Manual switch indicator at projector -->
+<path d="M 595 50 L 595 20" stroke="#ff8f6b" stroke-width="2" fill="none" marker-end="url(#aRed)" stroke-dasharray="4,3"/>
+
+</svg>
+
+<!-- TOP ROW -->
+<div class="box output" style="top:30px; left:430px; width:200px;">
+  <div class="box-title">📽️ Projector</div>
+  <div class="box-sub">2x HDMI inputs<br>Switches: PC-Podium ⇄ PC-AV</div>
+</div>
+
+<div class="box device" style="top:30px; left:1000px; width:175px;">
+  <div class="box-title">📹 Ceiling Webcam</div>
+  <div class="box-sub">USB → PC-AV</div>
+</div>
+
+<!-- MIDDLE ROW -->
+<div class="box pc" style="top:230px; left:30px; width:210px;">
+  <div class="box-title">🖥️ PC-Podium</div>
+  <div class="box-sub">Presenter slides<br>HDMI → Projector<br>Slide feed → StreamYard<br>Controlled remotely via CRD</div>
+</div>
+
+<div class="box cloud" style="top:400px; left:490px; width:195px;">
+  <div class="box-title">☁️ StreamYard</div>
+  <div class="box-sub">Live broadcast source</div>
+</div>
+
+<div class="box pc" style="top:230px; left:1000px; width:185px;">
+  <div class="box-title">🖥️ PC-AV</div>
+  <div class="box-sub">Webcam + mic audio<br>HDMI → Projector<br>Hosts StreamYard</div>
+</div>
+
+<!-- RIGHT AUDIO CHAIN (below PC-AV) -->
+<div class="box device" style="top:510px; left:1000px; width:185px;">
+  <div class="box-title">Focusrite Scarlett</div>
+  <div class="box-sub">USB audio interface<br>USB → PC-AV</div>
+</div>
+
+<div class="box device" style="top:680px; left:1000px; width:185px;">
+  <div class="box-title">🎚️ Mixer</div>
+  <div class="box-sub">Podium mic on ch. 7<br>Audio out → Focusrite</div>
+</div>
+
+<!-- MIC on left -->
+<div class="box device" style="top:490px; left:30px; width:140px;">
+  <div class="box-title">🎤 Podium Mic</div>
+  <div class="box-sub">XLR out → Mixer ch. 7</div>
+</div>
+
+<!-- LABELS -->
+<div class="lbl video"  style="top:162px; left:1098px;">USB</div>
+<div class="lbl video"  style="top:140px; left:870px;">HDMI</div>
+<div class="lbl video"  style="top:140px; left:300px;">HDMI</div>
+<div class="lbl switch" style="top:18px;  left:618px;">manual switch</div>
+<div class="lbl remote" style="top:198px; left:500px;">Chrome Remote Desktop (same PIN)</div>
+<div class="lbl stream" style="top:318px; left:300px;">slide feed only</div>
+<div class="lbl stream" style="top:318px; left:820px;">audio + webcam</div>
+<div class="lbl audio"  style="top:830px; left:480px;">XLR · ch. 7</div>
+<div class="lbl audio"  style="top:622px; left:1098px;">audio out</div>
+<div class="lbl audio"  style="top:415px; left:1098px;">USB</div>
+
+</div>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#3fae6a;"></span> Audio path</span>
+  <span><span class="swatch" style="background:#6fd0ff;"></span> Video / HDMI</span>
+  <span><span class="swatch" style="background:#e389f0;"></span> To StreamYard</span>
+  <span><span class="swatch" style="background:#ffb454;"></span> Chrome Remote Desktop</span>
+  <span><span class="swatch" style="background:#ff8f6b;"></span> Manual projector switch</span>
+</div>
+
+</body>
+</html>
