@@ -317,6 +317,14 @@ body {
       </tbody>
     </table>
   </div>
+
+  <!-- Sunday setup diagram -->
+  <div id="sunday-diagram" style="display:none; padding:32px 20px 48px;">
+    <h2 style="text-align:center;color:#8b949e;font-size:14px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:20px;">📡 Sunday AV Setup</h2>
+    <div style="overflow-x:auto;">
+      <iframe src="diagram-sunday.html" style="width:1200px;height:940px;border:none;border-radius:12px;" scrolling="no"></iframe>
+    </div>
+  </div>
 </div>
 
 <div id="update-banner">⟳ Checklist updated by an editor</div>
@@ -383,6 +391,7 @@ function startService(svc) {
   const badge = document.getElementById("service-badge");
   badge.textContent = svc === "friday" ? "Friday" : "Sunday";
   badge.className   = "service-badge " + svc;
+  document.getElementById("sunday-diagram").style.display = svc === "sunday" ? "block" : "none";
 
   if (PHASES.length) renderAll();
 }
